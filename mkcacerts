@@ -94,7 +94,7 @@ function showhelp()
         echo "                            certificates.  May not be used with -f/--cafile."
         echo "        -o  --outfile       The path to the output file."
         echo ""
-        echo "        -k  --keytool       The path to the java keytool utility."
+        echo "        -k  --keytool       The path to the java keytool utility. If not set, no java keystore will be created."
         echo ""
         echo "        -s  --openssl       The path to the openssl utility."
         echo ""
@@ -132,10 +132,9 @@ if test "${CAFILE}x" != "x" -a "${CADIR}x" != "x" ; then
 fi
 
 if test "${KEYTOOL}x" == "x" ; then
-    echo "ERROR!  You must provide a valid keytool program!"
+    echo "INFO!  You must provide a valid keytool program! A keystore for java with ca certificates will ne not created!"
     echo "\'$(basename ${0}) --help\' for more info."
     echo ""
-    exit 1
 fi
 
 if test "${OPENSSL}x" == "x" ; then
@@ -181,7 +180,6 @@ fi
 # Write the output file
 for cert in `find "${CADIR}" -type f -name "*.pem" -o -name "*.crt"`
 do
-
     # Make sure the certificate date is valid...
     date=$( ${OPENSSL} x509 -enddate -in "${cert}" -noout | sed 's/^notAfter=//' )
     mydate "${date}"
@@ -192,13 +190,15 @@ do
     fi
     unset date certdate
     ls "${cert}"
-    tempfile=`mktemp`
-    certbegin=`grep -n "^-----BEGIN" "${cert}" | cut -d ":" -f 1`
-    certend=`grep -n "^-----END" "${cert}" | cut -d ":" -f 1`
-    sed -n "${certbegin},${certend}p" "${cert}" > "${tempfile}"
-    echo yes | env LC_ALL=C "${KEYTOOL}" -import -alias `basename "${cert}"` -keystore \
-                   "${OUTFILE}" -storepass 'changeit' -file "${tempfile}"
-    rm "${tempfile}"
+    if test "${KEYTOOL}x" != "x" ; then
+        tempfile=`mktemp`
+        certbegin=`grep -n "^-----BEGIN" "${cert}" | cut -d ":" -f 1`
+        certend=`grep -n "^-----END" "${cert}" | cut -d ":" -f 1`
+        sed -n "${certbegin},${certend}p" "${cert}" > "${tempfile}"
+        echo yes | env LC_ALL=C "${KEYTOOL}" -import -alias `basename "${cert}"` -keystore \
+                       "${OUTFILE}" -storepass 'changeit' -file "${tempfile}"
+        rm "${tempfile}"
+    fi
 done
 
 if test "${TEMPDIR}x" != "x" ; then

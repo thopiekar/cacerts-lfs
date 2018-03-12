@@ -30,7 +30,7 @@ install: install-openssl install-java
 
 install-java: cacerts
 	if [ -d "./cacerts" ]; then \
-	    install -d $(DESTDIR)$(SSLDIR)/certs/java
+	    install -d $(DESTDIR)$(SSLDIR)/certs/java; \
 	    install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts; \
 	fi
 

@@ -1,6 +1,7 @@
 SSLDIR = /etc/ssl
 URL = http://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1
 
+install=install
 
 all: ca-certificates.crt cacerts
 
@@ -20,10 +21,10 @@ cacerts: ca-certificates.crt
 	./mkcacerts -f ca-certificates.crt -o cacerts -k keytool -s openssl
 
 install: all
-	install -d $(DESTDIR)$(SSLDIR)/certs/java 
-	install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs certs/*.pem
+	$(install) -d $(DESTDIR)$(SSLDIR)/certs/java 
+	$(install) -m 0644 -t $(DESTDIR)$(SSLDIR)/certs certs/*.pem
 	./remove-expired-certs.sh $(DESTDIR)$(SSLDIR)/certs
 	rm -f $(DESTDIR)$(SSLDIR)/certs/*.[0-9]*
 	c_rehash $(DESTDIR)$(SSLDIR)/certs
 	cat ca-certificates.crt |grep -vE "(^$|^SHA1 Fingerprint=)" ca-certificates.crt > $(DESTDIR)$(SSLDIR)/certs/ca-certificates.crt
-	install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts
+	$(install) -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts

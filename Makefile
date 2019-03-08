@@ -1,6 +1,7 @@
 SSLDIR = /etc/ssl
 URL = http://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1
 
+install=install
 
 all: ca-certificates.crt cacerts
 
@@ -23,21 +24,21 @@ cacerts-openssl: ca-certificates.crt
 	./mkcacerts -f ca-certificates.crt -o cacerts -s openssl
 
 install: install-openssl install-java
-	install -d $(DESTDIR)$(SSLDIR)/certs/java 
+	$(install) -d $(DESTDIR)$(SSLDIR)/certs/java 
 	if [ -d "./cacerts" ]; then \
-	    install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts; \
+	    $(install) -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts; \
 	fi
 
 install-java: cacerts
 	if [ -d "./cacerts" ]; then \
-	    install -d $(DESTDIR)$(SSLDIR)/certs/java
-	    install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts; \
+	    $(install) -d $(DESTDIR)$(SSLDIR)/certs/java
+	    $(install) -m 0644 -t $(DESTDIR)$(SSLDIR)/certs/java cacerts; \
 	fi
 
 install-openssl: cacerts-openssl
-	install -d $(DESTDIR)$(SSLDIR)/certs
+	$(install) -d $(DESTDIR)$(SSLDIR)/certs
 	cat ca-certificates.crt |grep -vE "(^$|^SHA1 Fingerprint=)" ca-certificates.crt > $(DESTDIR)$(SSLDIR)/certs/ca-certificates.crt
-	install -m 0644 -t $(DESTDIR)$(SSLDIR)/certs certs/*.pem
+	$(install) -m 0644 -t $(DESTDIR)$(SSLDIR)/certs certs/*.pem
 	./remove-expired-certs.sh $(DESTDIR)$(SSLDIR)/certs
 	rm -f $(DESTDIR)$(SSLDIR)/certs/*.[0-9]*
 	c_rehash $(DESTDIR)$(SSLDIR)/certs
